@@ -16,17 +16,17 @@
             },
             "description": "Opens a new tab to the right"
         },
-        "move-tab-right": {
-            "suggested_key": {
-                "default": "Alt+Shift+Right"
-            },
-            "description": "Moves the current tab to the right"
-        },
         "move-tab-left": {
             "suggested_key": {
-                "default": "Alt+Shift+Left"
+                "default": "Alt+Comma"
             },
             "description": "Moves the current tab to the left"
+        },
+        "move-tab-right": {
+            "suggested_key": {
+                "default": "Alt+Period"
+            },
+            "description": "Moves the current tab to the right"
         }
     },
     "permissions": [

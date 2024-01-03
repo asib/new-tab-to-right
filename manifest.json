@@ -1,0 +1,23 @@
+{
+    "manifest_version": 3,
+    "name": "New Tab to the Right",
+    "description": "Opens a new tab to the right of the current tab.",
+    "version": "1.0",
+    "icons": {
+        "128": "128.png"
+    },
+    "background": {
+        "service_worker": "background.js"
+    },
+    "commands": {
+        "open-new-tab": {
+            "suggested_key": {
+                "default": "Alt+T"
+            },
+            "description": "Opens a new tab to the right"
+        }
+    },
+    "permissions": [
+        "tabs"
+    ]
+}

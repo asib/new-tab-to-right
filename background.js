@@ -1,4 +1,22 @@
+async function updateShortcutWarning() {
+    const commands = await chrome.commands.getAll();
+    const missingShortcut = commands.some((command) => command.shortcut === "");
+
+    await chrome.action.setBadgeText({text: missingShortcut ? "!" : ""});
+    await chrome.action.setBadgeBackgroundColor({color: "#d93025"});
+    await chrome.action.setTitle({
+        title: missingShortcut
+            ? "Shortcuts need assigning"
+            : "New Tab to the Right"
+    });
+}
+
+chrome.runtime.onInstalled.addListener(updateShortcutWarning);
+chrome.runtime.onStartup.addListener(updateShortcutWarning);
+
 chrome.commands.onCommand.addListener(function(command) {
+    updateShortcutWarning();
+
     if (command == "open-new-tab") {
         chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
             chrome.tabs.create({index: tabs[0].index + 1});

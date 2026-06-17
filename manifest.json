@@ -9,6 +9,10 @@
     "background": {
         "service_worker": "background.js"
     },
+    "action": {
+        "default_popup": "popup.html",
+        "default_title": "New Tab to the Right"
+    },
     "commands": {
         "open-new-tab": {
             "suggested_key": {

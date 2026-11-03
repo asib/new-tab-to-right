@@ -88,7 +88,12 @@ browser.commands.onCommand.addListener(async function(command) {
 
     if (command === "open-new-tab") {
         const tabs = await browser.tabs.query({active: true, currentWindow: true});
-        await browser.tabs.create({index: tabs[0].index + 1});
+        const newTab = await browser.tabs.create({index: tabs[0].index + 1});
+        // A tab created just past a group's last tab is left out of the group,
+        // so add it to keep it with the tab it was opened from.
+        if (tabs[0].groupId !== browser.tabGroups.TAB_GROUP_ID_NONE && newTab.groupId !== tabs[0].groupId) {
+            await browser.tabs.group({groupId: tabs[0].groupId, tabIds: newTab.id});
+        }
     } else if (command === "move-tab-right") {
         await moveActiveTab(1);
     } else if (command === "move-tab-left") {

@@ -46,6 +46,27 @@ async function moveTab(tab, index) {
     }
 }
 
+// Moves the active tab one position left (direction -1) or right (direction 1).
+async function moveActiveTab(direction) {
+    const tabs = await browser.tabs.query({active: true, lastFocusedWindow: true});
+    const allTabs = await browser.tabs.query({lastFocusedWindow: true});
+    const tab = tabs[0];
+    const group = await collapsedGroupBeside(tab, allTabs, direction);
+
+    let newIndex;
+    if (group) {
+        // Step over a collapsed group rather than landing inside it.
+        newIndex = direction === 1 ? group.last : group.first;
+    } else if (direction === 1) {
+        // If the tab is already the rightmost tab, wrap around to leftmost.
+        newIndex = tab.index === (allTabs.length - 1) ? 0 : tab.index + 1;
+    } else {
+        // No special casing needed here - setting index to -1 will wrap the tab round correctly.
+        newIndex = tab.index - 1;
+    }
+    await moveTab(tab, newIndex);
+}
+
 browser.runtime.onInstalled.addListener(updateShortcutWarning);
 browser.runtime.onStartup.addListener(updateShortcutWarning);
 
@@ -56,25 +77,8 @@ browser.commands.onCommand.addListener(async function(command) {
         const tabs = await browser.tabs.query({active: true, currentWindow: true});
         await browser.tabs.create({index: tabs[0].index + 1});
     } else if (command === "move-tab-right") {
-        const tabs = await browser.tabs.query({active: true, lastFocusedWindow: true});
-        const allTabs = await browser.tabs.query({lastFocusedWindow: true});
-        const group = await collapsedGroupBeside(tabs[0], allTabs, 1);
-        let newIndex;
-        if (group) {
-            // Step over a collapsed group rather than landing inside it.
-            newIndex = group.last;
-        } else {
-            // If the tab is already the rightmost tab, wrap around to leftmost.
-            newIndex = tabs[0].index === (allTabs.length - 1) ? 0 : tabs[0].index + 1;
-        }
-        await moveTab(tabs[0], newIndex);
+        await moveActiveTab(1);
     } else if (command === "move-tab-left") {
-        const tabs = await browser.tabs.query({active: true, lastFocusedWindow: true});
-        const allTabs = await browser.tabs.query({lastFocusedWindow: true});
-        // Step over a collapsed group rather than landing inside it.
-        const group = await collapsedGroupBeside(tabs[0], allTabs, -1);
-        // No special casing needed for wraparound - setting index to -1 will wrap the tab round correctly.
-        const newIndex = group ? group.first : tabs[0].index - 1;
-        await moveTab(tabs[0], newIndex);
+        await moveActiveTab(-1);
     }
 });

@@ -11,10 +11,9 @@ async function updateShortcutWarning() {
     });
 }
 
-// Returns the group directly to the left (direction -1) or right (direction 1)
-// of `tab`, with its index range, or null if there isn't one or the tab is in it.
-async function groupBeside(tab, allTabs, direction) {
-    const neighbour = allTabs.find((t) => t.index === tab.index + direction);
+// Returns the group of `neighbour`, the tab next to `tab`, with its index
+// range, or null if there's no neighbour, it isn't grouped, or `tab` is in it.
+async function groupBeside(tab, neighbour, allTabs) {
     if (!neighbour
         || neighbour.groupId === chrome.tabGroups.TAB_GROUP_ID_NONE
         || neighbour.groupId === tab.groupId) {
@@ -31,8 +30,16 @@ async function moveActiveTab(direction) {
     const tabs = await chrome.tabs.query({active: true, lastFocusedWindow: true});
     const allTabs = await chrome.tabs.query({lastFocusedWindow: true});
     const tab = tabs[0];
-    const group = await groupBeside(tab, allTabs, direction);
+    const neighbour = allTabs.find((t) => t.index === tab.index + direction);
 
+    if (tab.groupId !== chrome.tabGroups.TAB_GROUP_ID_NONE && neighbour?.groupId !== tab.groupId) {
+        // The tab is at the edge of its group, so leave the group but stay put,
+        // just outside it. This mirrors joining a group at its edge, below.
+        await chrome.tabs.ungroup(tab.id);
+        return;
+    }
+
+    const group = await groupBeside(tab, neighbour, allTabs);
     if (group && !group.collapsed) {
         // Join the group at the edge the tab is next to. Moving one position
         // would put the tab one in from that edge instead.

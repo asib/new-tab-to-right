@@ -11,9 +11,9 @@ async function updateShortcutWarning() {
     });
 }
 
-// Returns the index range of the collapsed group directly to the left
-// (direction -1) or right (direction 1) of `tab`, or null if there isn't one.
-async function collapsedGroupBeside(tab, allTabs, direction) {
+// Returns the group directly to the left (direction -1) or right (direction 1)
+// of `tab`, with its index range, or null if there isn't one or the tab is in it.
+async function groupBeside(tab, allTabs, direction) {
     const neighbour = allTabs.find((t) => t.index === tab.index + direction);
     if (!neighbour
         || neighbour.groupId === chrome.tabGroups.TAB_GROUP_ID_NONE
@@ -22,12 +22,8 @@ async function collapsedGroupBeside(tab, allTabs, direction) {
     }
 
     const group = await chrome.tabGroups.get(neighbour.groupId);
-    if (!group.collapsed) {
-        return null;
-    }
-
     const indices = allTabs.filter((t) => t.groupId === group.id).map((t) => t.index);
-    return {first: Math.min(...indices), last: Math.max(...indices)};
+    return {id: group.id, collapsed: group.collapsed, first: Math.min(...indices), last: Math.max(...indices)};
 }
 
 // Moves the active tab one position left (direction -1) or right (direction 1).
@@ -35,7 +31,14 @@ async function moveActiveTab(direction) {
     const tabs = await chrome.tabs.query({active: true, lastFocusedWindow: true});
     const allTabs = await chrome.tabs.query({lastFocusedWindow: true});
     const tab = tabs[0];
-    const group = await collapsedGroupBeside(tab, allTabs, direction);
+    const group = await groupBeside(tab, allTabs, direction);
+
+    if (group && !group.collapsed) {
+        // Join the group at the edge the tab is next to. Moving one position
+        // would put the tab one in from that edge instead.
+        await chrome.tabs.group({groupId: group.id, tabIds: tab.id});
+        return;
+    }
 
     let newIndex;
     if (group) {

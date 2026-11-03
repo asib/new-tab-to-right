@@ -9,7 +9,9 @@ the currently active tab, plus shortcuts for reordering tabs.
 
 Both move shortcuts step over collapsed tab groups instead of dropping the
 tab inside them. Moving a tab into an open group from just outside it adds
-the tab at the group's near edge rather than one tab in from it.
+the tab at the group's near edge rather than one tab in from it, and moving
+the tab at a group's edge outward takes it out of the group in place, just
+outside the group.
 
 Two implementations are kept in this repo, one per browser:
 

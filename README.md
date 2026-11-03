@@ -7,9 +7,16 @@ the currently active tab, plus shortcuts for reordering tabs.
 - **Alt+.** — move the active tab one position right (wraps around)
 - **Alt+,** — move the active tab one position left (wraps around)
 
+Both move shortcuts step over collapsed tab groups instead of dropping the
+tab inside them. Moving a tab into an open group from just outside it adds
+the tab at the group's near edge rather than one tab in from it, and moving
+the tab at a group's edge outward takes it out of the group in place, just
+outside the group. A new tab opened from a grouped tab joins that tab's group,
+including when it's opened from the group's last tab.
+
 Two implementations are kept in this repo, one per browser:
 
-- [`chrome/`](chrome/) — the original Chrome/Chromium extension (MV3, `chrome.*` callback API, service worker background).
+- [`chrome/`](chrome/) — the original Chrome/Chromium extension (MV3, promise-based `chrome.*` API, service worker background).
 - [`firefox/`](firefox/) — a Firefox port (MV3, `browser.*` promise API, event-page background, since Firefox doesn't run MV3 service workers the same way Chrome does). The popup's "assign shortcuts" flow points at `about:addons` instead of `chrome://extensions/shortcuts`, which doesn't exist in Firefox.
 
 See each directory's own README for packaging/loading instructions specific to that browser.

@@ -8,7 +8,8 @@ the currently active tab, plus shortcuts for reordering tabs.
 - **Alt+,** — move the active tab one position left (wraps around)
 
 Both move shortcuts step over collapsed tab groups instead of dropping the
-tab inside them.
+tab inside them. Moving a tab into an open group from just outside it adds
+the tab at the group's near edge rather than one tab in from it.
 
 Two implementations are kept in this repo, one per browser:
 

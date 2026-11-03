@@ -7,7 +7,8 @@ Firefox port of [asib/new-tab-to-right](https://github.com/asib/new-tab-to-right
 - **Alt+,** — move the active tab one position left (wraps around)
 
 Both move shortcuts step over collapsed tab groups instead of dropping the
-tab inside them.
+tab inside them. Moving a tab into an open group from just outside it adds
+the tab at the group's near edge rather than one tab in from it.
 
 Ported from Chrome's MV3 `chrome.*` callback API to Firefox's promise-based
 `browser.*` API, and the background service worker was swapped for an MV3

@@ -6,6 +6,9 @@ Firefox port of [asib/new-tab-to-right](https://github.com/asib/new-tab-to-right
 - **Alt+.** — move the active tab one position right (wraps around)
 - **Alt+,** — move the active tab one position left (wraps around)
 
+Both move shortcuts step over collapsed tab groups instead of dropping the
+tab inside them.
+
 Ported from Chrome's MV3 `chrome.*` callback API to Firefox's promise-based
 `browser.*` API, and the background service worker was swapped for an MV3
 event page (`background.scripts`), since Firefox doesn't run MV3 service

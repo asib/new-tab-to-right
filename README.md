@@ -7,6 +7,9 @@ the currently active tab, plus shortcuts for reordering tabs.
 - **Alt+.** — move the active tab one position right (wraps around)
 - **Alt+,** — move the active tab one position left (wraps around)
 
+Both move shortcuts step over collapsed tab groups instead of dropping the
+tab inside them.
+
 Two implementations are kept in this repo, one per browser:
 
 - [`chrome/`](chrome/) — the original Chrome/Chromium extension (MV3, `chrome.*` callback API, service worker background).

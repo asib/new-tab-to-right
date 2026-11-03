@@ -11,6 +11,25 @@ async function updateShortcutWarning() {
     });
 }
 
+// Returns the index range of the collapsed group directly to the left
+// (direction -1) or right (direction 1) of `tab`, or null if there isn't one.
+async function collapsedGroupBeside(tab, allTabs, direction) {
+    const neighbour = allTabs.find((t) => t.index === tab.index + direction);
+    if (!neighbour
+        || neighbour.groupId === chrome.tabGroups.TAB_GROUP_ID_NONE
+        || neighbour.groupId === tab.groupId) {
+        return null;
+    }
+
+    const group = await chrome.tabGroups.get(neighbour.groupId);
+    if (!group.collapsed) {
+        return null;
+    }
+
+    const indices = allTabs.filter((t) => t.groupId === group.id).map((t) => t.index);
+    return {first: Math.min(...indices), last: Math.max(...indices)};
+}
+
 chrome.runtime.onInstalled.addListener(updateShortcutWarning);
 chrome.runtime.onStartup.addListener(updateShortcutWarning);
 
@@ -23,12 +42,23 @@ chrome.commands.onCommand.addListener(async function(command) {
     } else if (command === "move-tab-right") {
         const tabs = await chrome.tabs.query({active: true, lastFocusedWindow: true});
         const allTabs = await chrome.tabs.query({lastFocusedWindow: true});
-        // If the tab is already the rightmost tab, wrap around to leftmost.
-        const newIndex = tabs[0].index === (allTabs.length - 1) ? 0 : tabs[0].index + 1;
+        const group = await collapsedGroupBeside(tabs[0], allTabs, 1);
+        let newIndex;
+        if (group) {
+            // Step over a collapsed group rather than landing inside it, which would expand it.
+            newIndex = group.last;
+        } else {
+            // If the tab is already the rightmost tab, wrap around to leftmost.
+            newIndex = tabs[0].index === (allTabs.length - 1) ? 0 : tabs[0].index + 1;
+        }
         await chrome.tabs.move(tabs[0].id, {index: newIndex});
     } else if (command === "move-tab-left") {
         const tabs = await chrome.tabs.query({active: true, lastFocusedWindow: true});
-        // No special casing needed here - setting index to -1 will wrap the tab round correctly.
-        await chrome.tabs.move(tabs[0].id, {index: tabs[0].index - 1});
+        const allTabs = await chrome.tabs.query({lastFocusedWindow: true});
+        // Step over a collapsed group rather than landing inside it, which would expand it.
+        const group = await collapsedGroupBeside(tabs[0], allTabs, -1);
+        // No special casing needed for wraparound - setting index to -1 will wrap the tab round correctly.
+        const newIndex = group ? group.first : tabs[0].index - 1;
+        await chrome.tabs.move(tabs[0].id, {index: newIndex});
     }
 });
